@@ -50,7 +50,7 @@ jobs:
             echo "## Test and build"
             echo '```'
             node -v
-            npm test 2>&1 | grep -E '^(✔|✖|ℹ (tests|pass|fail))'
+            npm test -w server -- --test-reporter=spec 2>&1 | tail -n 30
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
         env:
