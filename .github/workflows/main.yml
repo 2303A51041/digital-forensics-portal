@@ -44,6 +44,18 @@ jobs:
       - name: Build React client
         run: npm run build
 
+      - name: Test summary
+        run: |
+          {
+            echo "## Test and build"
+            echo '```'
+            node -v
+            npm test 2>&1 | grep -E '^(✔|✖|ℹ (tests|pass|fail))'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          TEST_MONGODB_URI: mongodb://localhost:27017/forensics_test
+
   # 2. Build the Docker image, smoke-test the container, deploy it to a throwaway
   #    Kubernetes (kind) cluster, then publish it to GitHub Container Registry.
   docker:
@@ -99,6 +111,18 @@ jobs:
             -d '{"username":"admin","password":"Forensics@123"}' | grep -q '"token"' && echo "Demo login OK"
           docker ps
           docker logs app
+          {
+            echo "## Docker image smoke test"
+            echo '```'
+            docker image ls ${IMAGE_NAME}
+            echo
+            docker ps --format 'table {{.Names}}	{{.Image}}	{{.Status}}	{{.Ports}}'
+            echo
+            echo "GET /api/health -> $(curl -fsS http://localhost:5000/api/health)"
+            echo
+            docker logs app 2>&1
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create kind cluster
         uses: helm/kind-action@v1
@@ -123,6 +147,20 @@ jobs:
           sleep 5
           curl -fsS http://localhost:8080/api/health | tee /dev/stderr | grep '"database":"connected"'
           kubectl logs deployment/forensics-app -n forensics
+          {
+            echo "## Kubernetes deployment (kind cluster)"
+            echo '```'
+            kubectl version 2>/dev/null | head -2
+            echo
+            echo '$ kubectl get pods,svc,pvc -n forensics -o wide'
+            kubectl get pods,svc,pvc -n forensics -o wide
+            echo
+            echo '$ kubectl rollout status deployment/forensics-app -n forensics'
+            kubectl rollout status deployment/forensics-app -n forensics
+            echo
+            echo "GET http://localhost:8080/api/health (via port-forward to svc/forensics-app) -> $(curl -fsS http://localhost:8080/api/health)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Kubernetes diagnostics on failure
         if: failure()
