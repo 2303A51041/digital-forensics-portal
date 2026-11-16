@@ -1,0 +1,93 @@
+# The portal (Express API + built React client) as a Deployment, exposed by a NodePort Service.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: evidence-data
+  namespace: forensics
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forensics-app
+  namespace: forensics
+  labels:
+    app: forensics-app
+spec:
+  # One replica: evidence files are on a ReadWriteOnce volume and sign-in rate limiting is
+  # held in memory. Scaling out needs ReadWriteMany (or object) storage - see the report, 7.3.
+  replicas: 1
+  strategy:
+    type: Recreate # the RWO volume cannot be mounted by an old and a new pod at the same time
+  selector:
+    matchLabels:
+      app: forensics-app
+  template:
+    metadata:
+      labels:
+        app: forensics-app
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000 # the "node" user in the image
+        fsGroup: 1000 # makes the evidence volume writable by that user
+      containers:
+        - name: app
+          image: ghcr.io/2303a51041/digital-forensics-portal:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: forensics-config
+            - secretRef:
+                name: forensics-secret
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: evidence-data
+              mountPath: /data
+      volumes:
+        - name: evidence-data
+          persistentVolumeClaim:
+            claimName: evidence-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forensics-app
+  namespace: forensics
+spec:
+  type: NodePort
+  selector:
+    app: forensics-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30500 # http://<node-ip>:30500

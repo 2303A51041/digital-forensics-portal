@@ -1,0 +1,13 @@
+# Non-secret settings, passed to the app as environment variables.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: forensics-config
+  namespace: forensics
+data:
+  PORT: "5000"
+  MONGODB_URI: "mongodb://mongo-0.mongo.forensics.svc.cluster.local:27017/forensics_db"
+  DATA_DIR: "/data"
+  JWT_EXPIRES_IN: "8h"
+  MAX_UPLOAD_MB: "500"
+  SEED_DEMO: "true"

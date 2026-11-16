@@ -1,0 +1,17 @@
+# Keep the build context small and never copy secrets or local data into the image.
+**/node_modules
+client/dist
+server/data
+data
+.env
+.env.*
+!.env.example
+.git
+.github
+k8s
+docs
+*.docx
+*.png
+*.log
+Dockerfile
+docker-compose.yml

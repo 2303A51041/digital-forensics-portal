@@ -1,0 +1,41 @@
+# Runs the portal and MongoDB together:  docker compose up -d --build
+# Then open http://localhost:5000  (sign in as admin / Forensics@123)
+
+services:
+  mongo:
+    image: mongo:8.0
+    container_name: forensics-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app:
+    build: .
+    image: ghcr.io/2303a51041/digital-forensics-portal:latest
+    container_name: forensics-app
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      MONGODB_URI: mongodb://mongo:27017/forensics_db
+      # Set JWT_SECRET in a .env file next to this compose file; if empty, one is generated in /data.
+      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_EXPIRES_IN: 8h
+      MAX_UPLOAD_MB: 500
+      SEED_DEMO: "true"
+    ports:
+      - "5000:5000"
+    volumes:
+      - evidence-data:/data
+
+volumes:
+  mongo-data:
+  evidence-data:

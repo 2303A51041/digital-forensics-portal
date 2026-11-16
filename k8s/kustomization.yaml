@@ -1,0 +1,9 @@
+# Apply everything with:  kubectl apply -k k8s/
+# (create forensics-secret first - see secret.example.yaml)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - mongodb.yaml
+  - app.yaml
