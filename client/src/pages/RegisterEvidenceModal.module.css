@@ -1,0 +1,2 @@
+.hashBox { border: 1px dashed var(--line); border-radius: 6px; padding: 8px 12px; background: var(--surface-2); display: grid; gap: 2px; }
+.done { border-style: solid; border-color: var(--good); background: var(--good-bg); color: var(--good); }

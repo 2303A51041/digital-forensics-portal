@@ -1,0 +1,8 @@
+.dialog { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); padding: 0; width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 40px); }
+.dialog::backdrop { background: rgb(10 16 14 / .5); }
+.wide { width: min(760px, calc(100vw - 32px)); }
+.form { display: flex; flex-direction: column; max-height: calc(100vh - 42px); }
+.head { padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 600; }
+.body { padding: 16px 18px; overflow-y: auto; display: grid; gap: 12px; }
+.foot { padding: 12px 18px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; }
+.danger { background: var(--bad) !important; border-color: var(--bad) !important; color: #fff !important; }

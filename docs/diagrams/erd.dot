@@ -1,0 +1,22 @@
+digraph ER {
+  graph [rankdir=LR, fontname="Arial", pad=0.3, nodesep=0.45, ranksep=0.9];
+  node [shape=plain, fontname="Arial", fontsize=10];
+  edge [fontname="Arial", fontsize=9, color="#4C5B69", arrowhead=crow, arrowtail=tee, dir=both];
+  User [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4"><tr><td bgcolor="#17365C"><font color="white"><b>User</b></font></td></tr><tr><td align="left">_id · username (unique) · fullName<br align="left"/>email (unique) · passwordHash<br align="left"/>role · isActive · tokenVersion<br align="left"/>lastLoginAt<br align="left"/></td></tr></table>>];
+  Case [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4"><tr><td bgcolor="#17365C"><font color="white"><b>Case</b></font></td></tr><tr><td align="left">_id · caseNumber (DF-YYYY-NNNN)<br align="left"/>title · description · caseType<br align="left"/>priority · status · dueDate<br align="left"/>assignments[ ] {user, roleOnCase,<br align="left"/>  assignedBy, assignedAt}<br align="left"/>createdBy · openedAt · closedAt<br align="left"/></td></tr></table>>];
+  Evidence [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4"><tr><td bgcolor="#17365C"><font color="white"><b>Evidence</b></font></td></tr><tr><td align="left">_id · evidenceNumber (EV-YYYY-NNNN)<br align="left"/>case → Case · itemName · evidenceType<br align="left"/>source · description · storageLocation<br align="left"/>collectedAt · registeredBy → User<br align="left"/>sha256 · md5 · hashOrigin (immutable)<br align="left"/>file {originalName, mimeType, size}<br align="left"/>currentCustodian → User · status<br align="left"/>lastVerifiedAt · lastVerifyResult<br align="left"/></td></tr></table>>];
+  CustodyEvent [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4"><tr><td bgcolor="#17365C"><font color="white"><b>CustodyEvent</b> (append-only)</font></td></tr><tr><td align="left">_id · evidence → Evidence<br align="left"/>action (Registered | Transfer)<br align="left"/>fromUser · toUser → User<br align="left"/>location · purpose · notes<br align="left"/>statusAfter · occurredAt · recordedBy<br align="left"/></td></tr></table>>];
+  AccessLog [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4"><tr><td bgcolor="#17365C"><font color="white"><b>AccessLog</b> (append-only)</font></td></tr><tr><td align="left">_id · evidence → Evidence · user → User<br align="left"/>action (View | Download | Verify |<br align="left"/>  Transfer | Register) · detail · ip<br align="left"/>accessedAt<br align="left"/></td></tr></table>>];
+  Finding [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4"><tr><td bgcolor="#17365C"><font color="white"><b>Finding</b></font></td></tr><tr><td align="left">_id · case → Case · evidence → Evidence<br align="left"/>title · details · severity<br align="left"/>status (Draft | Final) · author → User<br align="left"/>finalizedAt · attachment {name, sha256}<br align="left"/></td></tr></table>>];
+  CaseSummary [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4"><tr><td bgcolor="#17365C"><font color="white"><b>CaseSummary</b> (append-only)</font></td></tr><tr><td align="left">_id · case → Case · version<br align="left"/>content · generatedBy → User<br align="left"/>generatedAt<br align="left"/></td></tr></table>>];
+  AuditLog [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4"><tr><td bgcolor="#17365C"><font color="white"><b>AuditLog</b> (hash chain)</font></td></tr><tr><td align="left">seq (unique) · occurredAt · user → User<br align="left"/>username · role · action<br align="left"/>entityType · entityId · details · ip<br align="left"/>prevHash · rowHash<br align="left"/></td></tr></table>>];
+  User -> Case [label="assigned M:N"];
+  Case -> Evidence [label="contains 1:N"];
+  Evidence -> CustodyEvent [label="history 1:N"];
+  Evidence -> AccessLog [label="accessed 1:N"];
+  Case -> Finding [label="1:N"];
+  Evidence -> Finding [label="linked 0..1:N", style=dashed];
+  Case -> CaseSummary [label="versions 1:N"];
+  User -> AuditLog [label="performs 1:N"];
+  User -> Evidence [label="custodian 1:N", style=dashed];
+}

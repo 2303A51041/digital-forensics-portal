@@ -1,0 +1,21 @@
+digraph W {
+  graph [rankdir=LR, fontname="Arial", pad=0.3, nodesep=0.35, ranksep=0.8];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=11, penwidth=1.2];
+  edge [fontname="Arial", fontsize=9, color="#4C5B69"];
+  Reg [label="Register evidence\nserver hashes file (SHA-256 + MD5)\ncustody event: Registered", fillcolor="#ECEEEA", color="#4C5B69"];
+  subgraph cluster_active { label="Active states: each custody transfer may set any of these"; style="rounded,dashed"; color="#1F5C99"; fontcolor="#1F5C99"; fontname="Arial"; fontsize=10;
+    St [label="In Storage", fillcolor="#ECEEEA", color="#4C5B69"];
+    An [label="In Analysis", fillcolor="#E3EEF8", color="#1F5C99"];
+    Tr [label="In Transit", fillcolor="#FBF0D5", color="#8A5A00"];
+  }
+  subgraph cluster_final { label="Final states: no further transfers"; style="rounded,dashed"; color="#1B7A4B"; fontcolor="#1B7A4B"; fontname="Arial"; fontsize=10;
+    Rel [label="Released", fillcolor="#E1F2E8", color="#1B7A4B"];
+    Arc [label="Archived", fillcolor="#E1F2E8", color="#1B7A4B"];
+  }
+  Reg -> St [label="initial custodian =\nregistering user"];
+  St -> An [label="transfer"]; An -> Tr [label="transfer"]; Tr -> St [label="transfer", constraint=false];
+  An -> Rel [label="final transfer\n(Manager / Admin / custodian)"];
+  St -> Arc [label="final transfer"];
+  V [shape=note, label="Verify integrity (any state)\nre-hash stored or supplied file\nMatch / Mismatch → access log + audit", fillcolor="#FDECEC", color="#A32020"];
+  Tr -> V [style=invis];
+}

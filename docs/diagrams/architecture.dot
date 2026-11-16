@@ -1,0 +1,32 @@
+digraph G {
+  graph [rankdir=LR, fontname="Arial", fontsize=12, nodesep=0.45, ranksep=0.7, pad=0.3, bgcolor="white"];
+  node  [shape=box, style="rounded,filled", fontname="Arial", fontsize=11, color="#17365C", fillcolor="#EAF0F7", penwidth=1.2];
+  edge  [fontname="Arial", fontsize=9, color="#4C5B69"];
+
+  subgraph cluster_client { label="Presentation tier (browser)"; style="rounded,dashed"; color="#7F8C99"; fontcolor="#17365C";
+    ui [label="React 19 SPA (Vite 6)\nReact Router 7 · CSS Modules\n8 screens + detail pages + Login"];
+    wc [label="Web Crypto API\nSHA-256 of selected file\n(computed in the browser)"];
+  }
+  subgraph cluster_api { label="Application tier (Node.js / Express 5)"; style="rounded,dashed"; color="#7F8C99"; fontcolor="#17365C";
+    mw   [label="Middleware\nhelmet · cors · JSON 1 MB\nlogin rate limit · JWT Bearer"];
+    rbac [label="RBAC\nrequirePermission()\ncase-scope filters (404)"];
+    up   [label="multer upload\nrandom storage names\nserver SHA-256 + MD5"];
+    routes [label="REST routers\n/auth /cases /evidence /custody\n/findings /users /reports\n/dashboard /audit"];
+    svc  [label="Report builder\nJSON · CSV · PDFKit\nsummary generator"];
+    audit[label="Audit logger\nSHA-256 hash chain\n+ evidence access log"];
+  }
+  subgraph cluster_data { label="Data tier"; style="rounded,dashed"; color="#7F8C99"; fontcolor="#17365C";
+    db [shape=cylinder, label="MongoDB\nforensics_db\n(Mongoose 8 ODM)", fillcolor="#E1F2E8", color="#1B7A4B"];
+    fs [shape=folder, label="Evidence storage\nserver/data/uploads", fillcolor="#FBF0D5", color="#8A5A00"];
+  }
+  wc -> ui [label="hash", style=dashed];
+  ui -> mw [label="JSON / multipart\nAuthorization: Bearer"];
+  mw -> rbac -> routes;
+  rbac -> up -> routes;
+  routes -> svc;
+  routes -> audit;
+  routes -> db [label="Mongoose queries"];
+  up -> fs;
+  audit -> db;
+  svc -> ui [label="PDF / CSV exports", style=dashed, constraint=false];
+}

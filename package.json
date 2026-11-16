@@ -1,24 +1,24 @@
 {
   "name": "digital-forensics-portal",
-  "version": "1.0.0",
-  "description": "Digital Forensics Case and Evidence Management Portal",
+  "version": "2.0.0",
+  "description": "Digital Forensics Case and Evidence Management Portal (React + Express + MongoDB)",
   "private": true,
-  "type": "module",
-  "main": "src/server.js",
+  "workspaces": [
+    "server",
+    "client"
+  ],
   "engines": {
-    "node": ">=22.13"
+    "node": ">=18.18"
   },
   "scripts": {
-    "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env src/server.js",
-    "dev": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env --watch src/server.js",
-    "test": "node --disable-warning=ExperimentalWarning --test test/api.test.js"
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w client",
+    "start": "npm start -w server",
+    "seed": "npm run seed -w server",
+    "seed:if-empty": "npm run seed:if-empty -w server",
+    "test": "npm test -w server"
   },
-  "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "express": "^5.3.0",
-    "express-rate-limit": "^8.7.3",
-    "helmet": "^8.3.0",
-    "jsonwebtoken": "^9.0.3",
-    "multer": "^2.5.0"
+  "devDependencies": {
+    "concurrently": "^9.2.5"
   }
 }

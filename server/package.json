@@ -1,0 +1,26 @@
+{
+  "name": "forensics-server",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch-path=src src/server.js",
+    "seed": "node src/seed.js --reset",
+    "seed:if-empty": "node src/seed.js --if-empty",
+    "test": "node --test --test-concurrency=1 test/api.test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.24.8",
+    "multer": "^2.0.2",
+    "pdfkit": "^0.17.2"
+  }
+}
